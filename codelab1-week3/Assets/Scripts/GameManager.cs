@@ -15,9 +15,19 @@ public class GameManager : MonoBehaviour
     
     private int score = 0; //private means that it can only be seen in this script
 
-    private const string FILE_SCORES = "/Logs/highScores.txt"; //add slash so it doesnt break the file path, direct to logs folder
+    private const string DIR_LOGS = "/Logs"; //separate string variable for logs folder
     
-    String FILE_PATH_HIGH_SCORES = Application.dataPath + FILE_SCORES; 
+    private const string FILE_SCORES = DIR_LOGS + "/highScores.txt"; //add slash so it doesnt break the file path, direct to logs folder
+
+    private const string FILE_FAIL = DIR_LOGS + "/failure.txt";
+
+    private const string FILE_ALL_SCORES = DIR_LOGS + "/allHighScores.csv"; //easy to import into spreadsheet programs
+    
+    String FILE_PATH_HIGH_SCORES = Application.dataPath + FILE_SCORES;
+
+    String FILE_PATH_FAILURE = Application.dataPath + FILE_FAIL;
+
+    String FILE_PATH_ALL_SCORES = Application.dataPath + FILE_ALL_SCORES;
     public int Score //property is way of wrapping variable up - a stand in, can transfer priv variable to public
         {
             get
@@ -28,6 +38,19 @@ public class GameManager : MonoBehaviour
             set
             {
                 score = value;
+
+                string fileContents = "";
+
+                if (File.Exists(FILE_PATH_ALL_SCORES))
+                {
+                    fileContents = File.ReadAllText(FILE_PATH_ALL_SCORES); //check this file
+                    
+                }
+
+                fileContents += score + ","; //this is additive
+                //csv import will accept commas and SOMETIMES pipes | - if there are interfering commas, use pipes
+                
+                File.WriteAllText(FILE_PATH_ALL_SCORES, fileContents);
                 
                 //Debug.Log("someone set the score");
 
@@ -60,9 +83,20 @@ public class GameManager : MonoBehaviour
             {
                 //highScore = PlayerPrefs.GetInt(PREF_KEY_HIGH_SCORE, 3);
 
-                string fileContents = File.ReadAllText(FILE_PATH_HIGH_SCORES); //read all content into string
+                if (File.Exists(FILE_PATH_HIGH_SCORES))
+                {
+                    
+                    string fileContents = File.ReadAllText(FILE_PATH_HIGH_SCORES); //read all content into string
                 
-                highScore = int.Parse(fileContents); //turn string into integer
+                    highScore = int.Parse(fileContents); //turn string into integer
+                    
+                }
+                else
+                {
+                    
+                    highScore = 3; //if file hasnt been created here is the value so the game doesnt explode
+                    
+                }
                 
                 //this indicates this is a safe place to write files (aka the location the application is in)
                 Debug.Log("file path: " + FILE_PATH_HIGH_SCORES);
@@ -80,6 +114,16 @@ public class GameManager : MonoBehaviour
             Debug.Log("File Path: " + FILE_PATH_HIGH_SCORES);
             
             //PlayerPrefs.SetInt(PREF_KEY_HIGH_SCORE, highScore);
+
+            if (!File.Exists(FILE_PATH_HIGH_SCORES)) //adding ! means statement is false (aka if this file doesnt exist)
+            {
+
+                Directory.CreateDirectory(Application.dataPath + DIR_LOGS); 
+                //will create relevant folder and file if there is none
+                
+                //File.Create(FILE_PATH_HIGH_SCORES);
+
+            }
             
             File.WriteAllText(FILE_PATH_HIGH_SCORES, highScore + ""); //empty string so the code doesnt yell at you
             
@@ -109,6 +153,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         FILE_PATH_HIGH_SCORES = Application.dataPath + FILE_SCORES;
+        FILE_PATH_ALL_SCORES  = Application.dataPath + FILE_ALL_SCORES;
         
         PlayerPrefs.SetInt(PREF_KEY_HIGH_SCORE, 3); //resets high score at beginning
 
@@ -148,6 +193,8 @@ public class GameManager : MonoBehaviour
         {
 
             loseText.text = "you lose. f";
+            
+            File.WriteAllText(FILE_PATH_FAILURE, "L + ratio. hi matt");
 
         }
 
