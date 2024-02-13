@@ -1,7 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Net;
 using TMPro;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -12,6 +15,9 @@ public class GameManager : MonoBehaviour
     
     private int score = 0; //private means that it can only be seen in this script
 
+    private const string FILE_SCORES = "/Logs/highScores.txt"; //add slash so it doesnt break the file path, direct to logs folder
+    
+    String FILE_PATH_HIGH_SCORES = Application.dataPath + FILE_SCORES; 
     public int Score //property is way of wrapping variable up - a stand in, can transfer priv variable to public
         {
             get
@@ -41,6 +47,8 @@ public class GameManager : MonoBehaviour
 
     public int levelNumber = 1;
 
+    private const string PREF_KEY_HIGH_SCORE = "highScoreKey"; //makes the key a variable that youre unlikely to get wrong
+
     private int highScore = 0;
     public int HighScore 
     {
@@ -50,7 +58,15 @@ public class GameManager : MonoBehaviour
 
             if (highScore == 0) //if hs not set, grab it out of the player prefs or use default value. first time only
             {
-                highScore = PlayerPrefs.GetInt("scoreKey", 3);
+                //highScore = PlayerPrefs.GetInt(PREF_KEY_HIGH_SCORE, 3);
+
+                string fileContents = File.ReadAllText(FILE_PATH_HIGH_SCORES); //read all content into string
+                
+                highScore = int.Parse(fileContents); //turn string into integer
+                
+                //this indicates this is a safe place to write files (aka the location the application is in)
+                Debug.Log("file path: " + FILE_PATH_HIGH_SCORES);
+                
             }
             return highScore;
         }
@@ -58,8 +74,14 @@ public class GameManager : MonoBehaviour
         set
         {
             highScore = value;
-            //Debug.Log("new high score!!!!!!!!! pog!!!!!!!!!!!!!!!");
-            PlayerPrefs.SetInt("scoreKey", highScore);
+           
+            Debug.Log("new high score!!!!!!!!! pog!!!!!!!!!!!!!!!");
+            
+            Debug.Log("File Path: " + FILE_PATH_HIGH_SCORES);
+            
+            //PlayerPrefs.SetInt(PREF_KEY_HIGH_SCORE, highScore);
+            
+            File.WriteAllText(FILE_PATH_HIGH_SCORES, highScore + ""); //empty string so the code doesnt yell at you
             
         }
     }
@@ -86,8 +108,9 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        FILE_PATH_HIGH_SCORES = Application.dataPath + FILE_SCORES;
         
-        PlayerPrefs.SetInt("scoreKey", 3); //resets high score at beginning
+        PlayerPrefs.SetInt(PREF_KEY_HIGH_SCORE, 3); //resets high score at beginning
 
     }
 
